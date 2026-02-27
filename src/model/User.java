@@ -33,4 +33,8 @@ public class User {
     public List<Account> getAccounts() {
         return Collections.unmodifiableList(accounts);
     }
+
+    public void addAccount(Account account) {
+        accounts.add(account);
+    }
 }
