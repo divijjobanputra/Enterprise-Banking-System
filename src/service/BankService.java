@@ -5,9 +5,8 @@ import exception.AccountNotFoundException;
 import model.*;
 
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class BankService {
 
@@ -82,5 +81,46 @@ public class BankService {
 
         fromAccount.withdraw(amount);
         toAccount.deposit(amount);
+    }
+
+    public double getTotalBankBalance(){
+        return accounts.values().stream().mapToDouble(Account::getBalance).sum();
+    }
+
+    public List<Account> getTopNAccountsByBalance(int n){
+        return accounts.values().stream()
+                .sorted(Comparator.comparingDouble(Account::getBalance).reversed())
+                .limit(n)
+                .collect(Collectors.toList());
+    }
+
+    public List<Transaction> getTransactionsAbove(double amount){
+        return accounts.values().stream()
+                .flatMap(account -> account.getTransactions().stream())
+                .filter(Transaction-> Transaction.getAmount()>amount)
+                .sorted(Comparator.comparingDouble(Transaction::getAmount).reversed())
+                .collect(Collectors.toList());
+    }
+
+    public double getTotalBalanceForUser(String userId){
+        User user = users.get(userId);
+        if (user == null) {
+            throw new UserNotFoundException("User not found");
+        }
+        return user.getAccounts()
+                .stream()
+                .mapToDouble(Account::getBalance)
+                .sum();
+    }
+
+    public List<User> getUsersSortedByTotalBalanceDesc() {
+        return users.values().stream()
+                .sorted(Comparator.comparingDouble(
+                        (User user) -> user.getAccounts()
+                                .stream()
+                                .mapToDouble(Account::getBalance)
+                                .sum()
+                ).reversed())
+                .collect(Collectors.toList());
     }
 }
